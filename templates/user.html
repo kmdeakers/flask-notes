@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div> username: {{user.username}}</div>
+<div> email: {{user.email}}</div>
+<div> first name: {{user.first_name}}</div>
+<div> last name: {{user.last_name}}</div>
+
+<form action="/logout" METHOD="POST">
+    {{ form.hidden_tag() }}
+
+ 
+
+    <button class="btn btn-primary" type="submit">Log Out</button>
+</form>
+
+{% endblock %}
