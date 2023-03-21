@@ -6,6 +6,18 @@
 <div> first name: {{user.first_name}}</div>
 <div> last name: {{user.last_name}}</div>
 
+<ul>
+    {% for note in notes %}
+    <li>{{ note.title }} {{ note.content }}
+        <a href="/notes/{{ note.id }}/update" class="btn btn-success">Edit</a>
+        <form action="/notes/{{ note.id }}/delete" method="POST">
+            {{ form.hidden_tag() }}
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+    </li>
+   
+</ul>
+
 <form action="/logout" METHOD="POST">
     {{ form.hidden_tag() }}
 

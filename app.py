@@ -81,7 +81,7 @@ def secret(username):
 
     user = User.query.filter(User.username == username).one_or_none()
     form = CSRFProtectForm()
-
+    notes = user.notes
     # use session.get("username")
     # correctUser = session.get("username")
 
@@ -92,7 +92,8 @@ def secret(username):
         return render_template(
             "user.html",
             user=user,
-            form=form)
+            form=form,
+            notes=notes)
 
 
 @app.post("/logout")
@@ -106,3 +107,18 @@ def logout():
         session.pop("username", None)
 
     return redirect("/")
+
+@app.post('/users/<username>/delete')
+def delete_user(username):
+    """delete user from database and delete all notes. 
+    Clear user session info and redirect to ('/')"""
+
+    form = CSRFProtectForm()
+
+    user = User.query.get_or_404(username)
+
+    db.session.delete(user)
+    db.session.delete(user.notes)
+    db.session.commit()
+
+    return redirect('/')

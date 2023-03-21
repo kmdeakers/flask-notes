@@ -44,6 +44,9 @@ class User(db.Model):
         nullable=False
     )
 
+    """direct navigation User to notes and back"""
+    notes = db.relationship('Note', backref='user')
+
     # start_register
     @classmethod
     def register(User, username, password, email, first_name, last_name):
@@ -78,3 +81,32 @@ class User(db.Model):
         else:
             return False
     # end_authenticate
+
+class Note(db.Model):
+    """User note"""
+
+    __tablename__ = "notes"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    title = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    content = db.Column(
+        db.Text,
+        nullable=False 
+    )
+
+    owner = db.Column(
+        ForeignKey("users.username"),
+        nullable=False
+    )
+
+
+
