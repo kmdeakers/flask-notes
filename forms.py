@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import InputRequired, Email, Length
 
-#TODO: set max range from WTForms
+
 class RegisterForm(FlaskForm):
     """Form for registering a user."""
 
@@ -48,3 +48,19 @@ class LoginForm(FlaskForm):
 
 class CSRFProtectForm(FlaskForm):
     """Form just for CSRF Protection"""
+
+
+#TODO: both for adding and editting notes, change name & docstring
+class NoteForm(FlaskForm):
+    """ Form for logged in user notes """
+
+    title = StringField(
+        "Title",
+        validators=[InputRequired(), Length(max=100)]
+    )
+
+    content = StringField(
+        "Content",
+        validators=[InputRequired()]
+    )
+

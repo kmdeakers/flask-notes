@@ -22,11 +22,13 @@ class User(db.Model):
     username = db.Column(
         db.String(20),
         unique=True,
-        primary_key=True)
+        primary_key=True
+    )
 
     password = db.Column(
         db.String(100),
-        nullable=False)
+        nullable=False
+    )
 
     email = db.Column(
         db.String(50),
@@ -56,10 +58,10 @@ class User(db.Model):
 
         # return instance of user w/username and hashed pwd
         return User(
-            username=username, 
-            password=hashed, 
+            username=username,
+            password=hashed,
             email=email,
-            first_name=first_name, 
+            first_name=first_name,
             last_name=last_name
         )
 
@@ -82,6 +84,7 @@ class User(db.Model):
             return False
     # end_authenticate
 
+
 class Note(db.Model):
     """User note"""
 
@@ -90,7 +93,7 @@ class Note(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
-        autoincrement=True,
+        autoincrement=True
     )
 
     title = db.Column(
@@ -100,13 +103,10 @@ class Note(db.Model):
 
     content = db.Column(
         db.Text,
-        nullable=False 
-    )
-
-    owner = db.Column(
-        ForeignKey("users.username"),
         nullable=False
     )
 
-
-
+    owner = db.Column(
+        db.ForeignKey("users.username"),
+        nullable=False
+    )

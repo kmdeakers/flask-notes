@@ -5,8 +5,8 @@ import os
 from flask import Flask, render_template, redirect, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import connect_db, db, User
-from forms import RegisterForm, LoginForm, CSRFProtectForm
+from models import connect_db, db, User, Note
+from forms import RegisterForm, LoginForm, CSRFProtectForm, NoteForm
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
@@ -46,7 +46,7 @@ def register():
 
         session["username"] = user.username
 
-        return redirect(f"/user/{username}")
+        return redirect(f"/users/{username}")
 
     else:
         return render_template("register.html", form=form)
@@ -74,16 +74,16 @@ def login():
 
     return render_template("login.html", form=form)
 
+# ===================================== USER ROUTE ==========================
+
 
 @app.get('/users/<username>')
-def secret(username):
+def user_info(username):
     """ Hidden page for logged-in users only """
 
-    user = User.query.filter(User.username == username).one_or_none()
+    user = User.query.get_or_404(username)
     form = CSRFProtectForm()
     notes = user.notes
-    # use session.get("username")
-    # correctUser = session.get("username")
 
     if "username" not in session or session["username"] != user.username:
         flash("You must be logged in to view!")
@@ -108,17 +108,110 @@ def logout():
 
     return redirect("/")
 
+
 @app.post('/users/<username>/delete')
 def delete_user(username):
     """delete user from database and delete all notes. 
     Clear user session info and redirect to ('/')"""
 
+    user = User.query.get_or_404(username)
+    if "username" not in session or session["username"] != user.username:
+        flash("You cannot perform this action!")
+        return redirect("/")
+
     form = CSRFProtectForm()
+    if form.validate_on_submit():
+
+        db.session.delete(user)
+        db.session.delete(user.notes)
+        db.session.commit()
+
+        return redirect('/')
+
+
+# ===================================== NOTES ROUTE ==========================
+
+@app.route('/users/<username>/notes/add', methods=["GET", "POST"])
+def create_user_note(username):
+    """ Display and handle form for notes """
 
     user = User.query.get_or_404(username)
+    if "username" not in session or session["username"] != user.username:
+        flash("You cannot perform this action!")
+        return redirect("/")
 
-    db.session.delete(user)
-    db.session.delete(user.notes)
-    db.session.commit()
+    form = NoteForm()
 
-    return redirect('/')
+    if form.validate_on_submit():
+        title = form.title.data
+        content = form.content.data
+        owner = user.username
+
+        note = Note(
+            title=title,
+            content=content,
+            owner=owner
+        )
+
+        db.session.add(note)
+        db.session.commit()
+
+        flash("Added new note!")
+        return redirect(f'/users/{username}')
+    else:
+        return render_template(
+            '/notes/add_note.html',
+            user=user,
+            form=form
+        )
+
+
+@app.route('/notes/<int:note_id>/update', methods=["GET", "POST"])
+def edit_note(note_id):
+    """ Display and handle form for editing note """
+
+    note = Note.query.get_or_404(note_id)
+    if "username" not in session or session["username"] != note.owner:
+        flash("You cannot perform this action!")
+        return redirect("/")
+
+    form = NoteForm()
+
+    if form.validate_on_submit():
+        note.title = form.title.data
+        note.content = form.content.data
+        note.owner = note.owner
+
+        db.session.commit()
+
+        flash("Edited note!")
+        return redirect(f'/users/{note.owner}')
+    else:
+        return render_template(
+            '/notes/edit_note.html',
+            note=note,
+            form=form
+        )
+
+
+@app.post('/notes/<int:note_id>/delete')
+def delete_note(note_id):
+    """ Delete note and redirect """
+
+    note = Note.query.get_or_404(note_id)
+    if "username" not in session or session["username"] != note.owner:
+        flash("You cannot perform this action!")
+        return redirect("/")
+
+    form = CSRFProtectForm()
+
+    if form.validate_on_submit():
+
+        db.session.delete(note)
+        db.session.commit()
+
+        return redirect(f'/users/{note.owner}')
+
+    else:
+        flash("You are unauthorized!")
+        return redirect("/")

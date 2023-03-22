@@ -15,14 +15,11 @@
             <button class="btn btn-danger" type="submit">Delete</button>
         </form>
     </li>
-   
+   {% endfor %}
 </ul>
-
+<a href="/users/{{user.username}}/notes/add" class="btn btn-success">Add Note</a>
 <form action="/logout" METHOD="POST">
     {{ form.hidden_tag() }}
-
- 
-
     <button class="btn btn-primary" type="submit">Log Out</button>
 </form>
 
